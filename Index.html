@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Microcontroller Lab Codes</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#5f6b7a;--ac:#1d6fd8;--bd:#dde2e8;--code:#f1f3f6}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1c2026;--tx:#e8ebef;--mu:#9aa5b3;--ac:#5aa2ff;--bd:#2b313a;--code:#101317}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+header{padding:18px 16px 8px;max-width:900px;margin:auto}
+h1{font-size:1.3rem;margin:0}
+header p{margin:4px 0 0;color:var(--mu);font-size:.9rem}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:8px 16px;max-width:900px;margin:auto}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.chips button{flex:none;width:40px;height:40px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-weight:600;cursor:pointer}
+.chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.grp{font-size:.75rem;color:var(--mu);margin:2px 0 6px}
+main{max-width:900px;margin:auto;padding:8px 16px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.top{padding:14px 16px;display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.top h2{font-size:1.05rem;margin:0}
+.top small{color:var(--mu)}
+.copy{flex:none;border:1px solid var(--ac);color:var(--ac);background:transparent;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
+pre{margin:0;padding:14px 16px;background:var(--code);overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;border-top:1px solid var(--bd)}
+.pn{display:flex;justify-content:space-between;margin-top:12px}
+.pn button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:8px 14px;cursor:pointer}
+</style></head><body>
+<header><h1>Microcontroller Lab: Program Codes</h1><p>PCC-304-ETC, 8051 (1–5) and LPC2148 (6–12). Pick a number.</p></header>
+<nav><div class="grp">Tap a code number</div><div class="chips" id="chips"></div></nav>
+<main><div class="card"><div class="top"><div><h2 id="t"></h2><small id="s"></small></div><button class="copy" id="cp">Copy</button></div><pre><code id="c"></code></pre></div>
+<div class="pn"><button id="pv">&larr; Previous</button><button id="nx">Next &rarr;</button></div></main>
+
+<script type="text/plain" id="c1">#include <reg51.h>
+void delay(unsigned int msec) {
+ unsigned int i, j;
+ for (i = 0; i < msec; i++)
+  for (j = 0; j < 1275; j++);
+}
+void flashingLED() {
+ while (1) { P1 = 0xFF; delay(500); P1 = 0x00; delay(500); }
+}
+void binaryCounter() {
+ unsigned char i;
+ while (1) {
+  for (i = 0; i <= 0xFF; i++) { P1 = i; delay(200); }
+ }
+}
+void bcdCounter() {
+ unsigned char bcd, tens, ones;
+ while (1) {
+  for (bcd = 0; bcd <= 99; bcd++) {
+   tens = bcd / 10;
+   ones = bcd % 10;
+   P1 = (tens << 4) | ones; /* packed BCD */
+   delay(300);
+  }
+ }
+}
+void hexCounter() {
+ unsigned char i;
+ while (1) {
+  for (i = 0x00; i <= 0xFF; i++) { P1 = i; delay(200); }
+ }
+}
+void main() {
+ flashingLED(); /* call the required routine */
+}</script>
+<script type="text/plain" id="c2">#include <reg51.h>
+sbit digit1 = P2^0; /* tens digit enable */
+sbit digit2 = P2^1; /* units digit enable */
+unsigned char code sevenSeg[10] = {
+ 0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F
+};
+void delay(unsigned int msec) {
+ unsigned int i, j;
+ for (i = 0; i < msec; i++)
+  for (j = 0; j < 100; j++);
+}
+void main() {
+ unsigned char count, tens, ones;
+ unsigned int r;
+ while (1) {
+  for (count = 0; count <= 99; count++) {
+   tens = count / 10;
+   ones = count % 10;
+   for (r = 0; r < 40; r++) {
+    P1 = sevenSeg[ones];
+    digit1 = 0; digit2 = 1; /* units */
+    delay(2);
+    digit2 = 0;
+    P1 = sevenSeg[tens];
+    digit1 = 1; digit2 = 0; /* tens */
+    delay(2);
+    digit1 = 0;
+   }
+  }
+ }
+}</script>
+<script type="text/plain" id="c3">#include <reg51.h>
+void delay(unsigned int usec) {
+ unsigned int i;
+ for (i = 0; i < usec; i++);
+}
+void squareWave() {
+ while (1) { P1 = 0xFF; delay(50); P1 = 0x00; delay(50); }
+}
+void sawtoothWave() {
+ unsigned char i;
+ while (1) {
+  for (i = 0; i < 0xFF; i++) { P1 = i; delay(2); }
+ }
+}
+void triangularWave() {
+ unsigned char i;
+ while (1) {
+  for (i = 0; i < 0xFF; i++) { P1 = i; delay(2); }
+  for (i = 0xFF; i > 0; i--) { P1 = i; delay(2); }
+ }
+}
+void main() {
+ sawtoothWave(); /* call the required routine */
+}</script>
+<script type="text/plain" id="c4">#include <reg51.h>
+unsigned char code stepSeq[4] = {0x01, 0x02, 0x04, 0x08}; /* P1.0 - P1.3 */
+void timerDelay() {
+ TMOD = 0x01;  /* Timer0, Mode 1, 16-bit */
+ TH0 = 0x3C;
+ TL0 = 0xB0;   /* illustrative value @ 11.0592 MHz */
+ TR0 = 1;
+ while (TF0 == 0);
+ TR0 = 0;
+ TF0 = 0;
+}
+void main() {
+ unsigned char i;
+ while (1) {
+  for (i = 0; i < 4; i++) {
+   P1 = stepSeq[i];
+   timerDelay();
+  }
+ }
+}</script>
+<script type="text/plain" id="c5">#include <reg51.h>
+sbit relay  = P1^0;
+sbit buzzer = P1^1;
+sbit sensor = P3^0; /* active-low trigger */
+void delay(unsigned int msec) {
+ unsigned int i, j;
+ for (i = 0; i < msec; i++)
+  for (j = 0; j < 1275; j++);
+}
+void main() {
+ while (1) {
+  if (sensor == 0) {
+   relay = 1;
+   buzzer = 1;
+   delay(1000);
+   buzzer = 0;
+  } else {
+   relay = 0;
+  }
+ }
+}</script>
+<script type="text/plain" id="c6">#include <lpc214x.h>
+#define RS  (1UL << 20)
+#define RW  (1UL << 21)
+#define EN  (1UL << 22)
+#define CS1 (1UL << 23)
+#define CS2 (1UL << 24)
+extern const unsigned char image[8][128]; /* 128x64 bitmap */
+void delay(unsigned int t) { unsigned int i; for (i = 0; i < t; i++); }
+void glcdCommand(unsigned char cmd, unsigned long chip) {
+ IO1CLR = 0x00FF0000;
+ IO1SET = ((unsigned long)cmd << 16);
+ IO1CLR = RS; IO1CLR = RW;
+ IO1SET = chip;
+ IO1SET = EN; delay(1); IO1CLR = EN;
+}
+void glcdData(unsigned char data, unsigned long chip) {
+ IO1CLR = 0x00FF0000;
+ IO1SET = ((unsigned long)data << 16);
+ IO1SET = RS; IO1CLR = RW;
+ IO1SET = chip;
+ IO1SET = EN; delay(1); IO1CLR = EN;
+}
+void glcdInit() {
+ IO1DIR = 0x01FF0000;
+ glcdCommand(0x3F, CS1);
+ glcdCommand(0x3F, CS2);
+}
+void displayImage() {
+ unsigned char page, col;
+ for (page = 0; page < 8; page++) {
+  glcdCommand(0xB8 | page, CS1);
+  glcdCommand(0x40, CS1);
+  for (col = 0; col < 64; col++) glcdData(image[page][col], CS1);
+  glcdCommand(0xB8 | page, CS2);
+  glcdCommand(0x40, CS2);
+  for (col = 64; col < 128; col++) glcdData(image[page][col], CS2);
+ }
+}
+int main() {
+ glcdInit();
+ displayImage();
+ while (1);
+}</script>
+<script type="text/plain" id="c7">#include <lpc214x.h>
+unsigned char keymap[4][4] = {
+ {'1','2','3','A'},
+ {'4','5','6','B'},
+ {'7','8','9','C'},
+ {'*','0','#','D'}
+};
+void delay(unsigned int t) { unsigned int i; for (i = 0; i < t; i++); }
+unsigned char scanKeypad() {
+ unsigned char row, col;
+ for (row = 0; row < 4; row++) {
+  IO0SET = 0x0F;          /* rows P0.0-P0.3 high */
+  IO0CLR = (1 << row);    /* drive current row low */
+  delay(1000);
+  for (col = 0; col < 4; col++) {
+   if ((IO0PIN & (1 << (4 + col))) == 0) /* columns P0.4-P0.7 */
+    return keymap[row][col];
+  }
+ }
+ return 0xFF; /* no key */
+}
+int main() {
+ unsigned char key;
+ IO0DIR |= 0x0F;
+ IO0DIR &= ~0xF0;
+ while (1) {
+  key = scanKeypad();
+  if (key != 0xFF) {
+   /* display 'key' on LCD/UART */
+  }
+  delay(5000);
+ }
+}</script>
+<script type="text/plain" id="c8">#include <lpc214x.h>
+/* ---------- Polling-based ADC read ---------- */
+unsigned int readADC_Polling(unsigned char channel) {
+ unsigned int result;
+ AD0CR = (1 << channel) | (4 << 8) | (1 << 21) | (1 << 24);
+ while (!(AD0GDR & 0x80000000)); /* wait for DONE */
+ result = (AD0GDR >> 6) & 0x3FF;
+ return result;
+}
+/* ---------- Interrupt-based ADC read ---------- */
+volatile unsigned int adcResult;
+volatile unsigned char dataReady = 0;
+void ADC_ISR(void) __irq {
+ adcResult = (AD0GDR >> 6) & 0x3FF;
+ dataReady = 1;
+ AD0CR &= ~(1 << 24);
+ VICVectAddr = 0; /* acknowledge interrupt */
+}
+void ADC_InitInterrupt() {
+ PINSEL1 |= (1 << 18);
+ AD0CR = (1 << 1) | (4 << 8) | (1 << 21);
+ VICVectAddr8 = (unsigned int)ADC_ISR;
+ VICVectCntl8 = 0x20 | 18;
+ VICIntEnable = (1 << 18);
+}
+int main() {
+ unsigned int pollValue;
+ PINSEL1 |= (1 << 18);
+ ADC_InitInterrupt();
+ while (1) {
+  pollValue = readADC_Polling(1);
+  AD0CR |= (1 << 24);
+  while (!dataReady);
+  dataReady = 0;
+  /* use pollValue and adcResult */
+ }
+}</script>
+<script type="text/plain" id="c9">#include <lpc214x.h>
+#include <string.h>
+char gpsBuffer[100];
+unsigned char idx = 0;
+void UART0_Init() {
+ PINSEL0 |= 0x00000005; /* P0.0 = TXD0, P0.1 = RXD0 */
+ U0LCR = 0x83;          /* 8N1, DLAB = 1 */
+ U0DLL = 97;            /* 9600 baud (illustrative) */
+ U0DLM = 0;
+ U0LCR = 0x03;
+}
+char UART0_Getch() {
+ while (!(U0LSR & 0x01));
+ return U0RBR;
+}
+void readGPSLine() {
+ char c;
+ idx = 0;
+ do {
+  c = UART0_Getch();
+  gpsBuffer[idx++] = c;
+ } while (c != '\n' && idx < 99);
+ gpsBuffer[idx] = '\0';
+}
+void extractLatLong(char *sentence, char *lat, char *lon) {
+ char *token;
+ unsigned char field = 0;
+ token = strtok(sentence, ",");
+ while (token != NULL) {
+  if (field == 2) strcpy(lat, token);
+  if (field == 4) strcpy(lon, token);
+  token = strtok(NULL, ",");
+  field++;
+ }
+}
+int main() {
+ char latitude[15], longitude[15];
+ UART0_Init();
+ while (1) {
+  readGPSLine();
+  if (strncmp(gpsBuffer, "$GPGGA", 6) == 0) {
+   extractLatLong(gpsBuffer, latitude, longitude);
+   /* display latitude and longitude */
+  }
+ }
+}</script>
+<script type="text/plain" id="c10">#include <lpc214x.h>
+void RTC_Init() {
+ CCR = 0x01;  /* enable RTC clock */
+ ILR = 0x03;  /* clear interrupt flags */
+ SEC = 0;
+ MIN = 30;
+ HOUR = 10;
+ DOM = 4;
+ MONTH = 9;
+ YEAR = 2026;
+}
+void displayTime() {
+ unsigned int hh = HOUR, mm = MIN, ss = SEC;
+ /* format hh:mm:ss and display on LCD/UART */
+}
+int main() {
+ RTC_Init();
+ while (1) {
+  displayTime();
+ }
+}</script>
+<script type="text/plain" id="c11">#include <lpc214x.h>
+#define EEPROM_ADDR 0xA0
+void I2C_Init() {
+ PINSEL0 |= 0x50; /* P0.2 = SCL0, P0.3 = SDA0 */
+ I20SCLH = 150;
+ I20SCLL = 150;
+ I20CONSET = 0x40;
+}
+void I2C_Start() { I20CONSET = 0x20; while (!(I20CONSET & 0x08)); I20CONCLR = 0x20; }
+void I2C_Stop()  { I20CONSET = 0x10; }
+void I2C_Write(unsigned char data) {
+ I20DAT = data;
+ I20CONCLR = 0x08;
+ while (!(I20CONSET & 0x08));
+}
+void EEPROM_WriteByte(unsigned int memAddr, unsigned char data) {
+ I2C_Start();
+ I2C_Write(EEPROM_ADDR);
+ I2C_Write((memAddr >> 8) & 0xFF);
+ I2C_Write(memAddr & 0xFF);
+ I2C_Write(data);
+ I2C_Stop();
+}
+unsigned char EEPROM_ReadByte(unsigned int memAddr) {
+ unsigned char data;
+ I2C_Start();
+ I2C_Write(EEPROM_ADDR);
+ I2C_Write((memAddr >> 8) & 0xFF);
+ I2C_Write(memAddr & 0xFF);
+ I2C_Start();
+ I2C_Write(EEPROM_ADDR | 0x01);
+ I20CONSET = 0x04;
+ while (!(I20CONSET & 0x08));
+ data = I20DAT;
+ I2C_Stop();
+ return data;
+}
+int main() {
+ unsigned char value;
+ I2C_Init();
+ EEPROM_WriteByte(0x0010, 0x55);
+ while (1) {
+  value = EEPROM_ReadByte(0x0010); /* expected 0x55 */
+ }
+}</script>
+<script type="text/plain" id="c12">#include <lpc214x.h>
+#define CS_LOW()  (IO0CLR = (1 << 20))
+#define CS_HIGH() (IO0SET = (1 << 20))
+void SPI_Init() {
+ PINSEL0 |= 0x00002A00; /* SCK0, MISO0, MOSI0 */
+ IO0DIR |= (1 << 20);   /* CS output */
+ S0SPCR = 0x20;         /* master mode */
+ S0SPCCR = 8;
+}
+unsigned char SPI_Transfer(unsigned char data) {
+ S0SPDR = data;
+ while (!(S0SPSR & 0x80));
+ return S0SPDR;
+}
+unsigned char SD_SendCmd(unsigned char cmd, unsigned long arg, unsigned char crc) {
+ unsigned char response;
+ unsigned char retry = 0;
+ SPI_Transfer(0x40 | cmd);
+ SPI_Transfer((arg >> 24) & 0xFF);
+ SPI_Transfer((arg >> 16) & 0xFF);
+ SPI_Transfer((arg >> 8) & 0xFF);
+ SPI_Transfer(arg & 0xFF);
+ SPI_Transfer(crc);
+ do {
+  response = SPI_Transfer(0xFF);
+ } while ((response & 0x80) && (retry++ < 8));
+ return response;
+}
+unsigned char SD_Init() {
+ unsigned char i, r;
+ CS_HIGH();
+ for (i = 0; i < 10; i++) SPI_Transfer(0xFF);
+ CS_LOW();
+ r = SD_SendCmd(0, 0, 0x95);      /* CMD0 */
+ r = SD_SendCmd(8, 0x1AA, 0x87);  /* CMD8 */
+ do {
+  SD_SendCmd(55, 0, 0xFF);                /* CMD55 */
+  r = SD_SendCmd(41, 0x40000000, 0xFF);   /* ACMD41 */
+ } while (r != 0);
+ CS_HIGH();
+ return r;
+}
+int main() {
+ unsigned char status;
+ SPI_Init();
+ status = SD_Init(); /* 0 = card ready */
+ while (1) { }
+}</script>
+
+<script>
+var T=[["Interfacing of LEDs: Flashing, Counter, BCD, HEX","8051 / Keil C51"],["Multiplexed 7-Segment Display (00-99 counter)","8051 / Keil C51"],["Waveform Generation using DAC","8051 / Keil C51"],["Stepper Motor Interfacing (Timer0 delay)","8051 / Keil C51"],["Relay and Buzzer Interfacing","8051 / Keil C51"],["GLCD (128x64) Image Display","LPC2148 / Keil ARM"],["4x4 Matrix Keyboard","LPC2148 / Keil ARM"],["Built-in ADC: Polling and Interrupt","LPC2148 / Keil ARM"],["GPS Interfacing (Latitude/Longitude)","LPC2148 / Keil ARM"],["On-Chip RTC","LPC2148 / Keil ARM"],["EEPROM using I2C","LPC2148 / Keil ARM"],["SD Card using SPI","LPC2148 / Keil ARM"]];
+var cur=0,ch=document.getElementById("chips");
+T.forEach(function(_,i){var b=document.createElement("button");b.textContent=i+1;b.onclick=function(){show(i)};ch.appendChild(b)});
+function show(i){cur=i;document.getElementById("t").textContent="Code no. "+(i+1)+": "+T[i][0];document.getElementById("s").textContent=T[i][1];document.getElementById("c").textContent=document.getElementById("c"+(i+1)).textContent.trim();
+[].forEach.call(ch.children,function(b,k){b.classList.toggle("on",k===i)});ch.children[i].scrollIntoView({inline:"center",block:"nearest"});document.getElementById("cp").textContent="Copy";window.scrollTo(0,0)}
+document.getElementById("pv").onclick=function(){show((cur+11)%12)};
+document.getElementById("nx").onclick=function(){show((cur+1)%12)};
+document.getElementById("cp").onclick=function(){var t=document.getElementById("c").textContent,b=this;try{navigator.clipboard.writeText(t).then(function(){b.textContent="Copied"})}catch(e){var r=document.createRange();r.selectNodeContents(document.getElementById("c"));var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="Selected"}};
+show(0);
+</script>
+</body></html>
